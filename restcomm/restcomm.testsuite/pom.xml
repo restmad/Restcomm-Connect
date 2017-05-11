@@ -410,7 +410,27 @@
                     <resultFileMinClasspathCount>2</resultFileMinClasspathCount>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.18.1</version>
+                <configuration>
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
+                    <forkCount>16</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <parallel>classes</parallel>
+                    <threadCountClasses>5</threadCountClasses>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>failsafe-integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>                        
         </plugins>
         <pluginManagement>
             <plugins>

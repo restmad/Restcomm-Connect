@@ -356,28 +356,29 @@ public final class CallManager extends RestcommUntypedActor {
             final Configuration proxyConfiguration = runtime.subset("acting-as-proxy");
             final Configuration proxyOutRulesConf = proxyConfiguration.subset("proxy-rules");
             this.actAsProxyOut = proxyConfiguration.getBoolean("enabled", false);
-            if (actAsProxyOut) {
-                isActAsProxyOutUseContactHeader = proxyConfiguration.getBoolean("use-contact-header", true);
-                proxyOutRules = new ArrayList<ProxyRule>();
+            isActAsProxyOutUseContactHeader = proxyConfiguration.getBoolean("use-contact-header", true);
+            proxyOutRules = new ArrayList<ProxyRule>();
+            List<HierarchicalConfiguration> rulesList = ((HierarchicalConfiguration) proxyOutRulesConf).configurationsAt("rule");
 
-                List<HierarchicalConfiguration> rulesList = ((HierarchicalConfiguration) proxyOutRulesConf).configurationsAt("rule");
-                for (HierarchicalConfiguration rule : rulesList) {
-                    String fromHost = rule.getString("from-uri");
-                    String toHost = rule.getString("to-uri");
-                    final String username = rule.getString("proxy-to-username");
-                    final String password = rule.getString("proxy-to-password");
-                    final String patchSdpUri = rule.getString("patch-sdp");
+            for (HierarchicalConfiguration rule : rulesList) {
+                String fromHost = rule.getString("from-uri");
+                String toHost = rule.getString("to-uri");
+                final String username = rule.getString("proxy-to-username");
+                final String password = rule.getString("proxy-to-password");
+                final String patchSdpUri = rule.getString("patch-sdp");
+                if (((fromHost != null && !fromHost.isEmpty()) || (toHost !=null && !toHost.isEmpty())) &&
+                    (this.actAsProxyOut || (patchSdpUri != null && !patchSdpUri.isEmpty()))) {
                     ProxyRule proxyRule = new ProxyRule(fromHost, toHost, username, password, patchSdpUri);
                     proxyOutRules.add(proxyRule);
                 }
-
-                if (logger.isInfoEnabled()) {
-                    String msg = String.format("`ActAsProxy` feature is enabled with %d rules.", proxyOutRules.size());
-                    logger.info(msg);
-                }
-
-                actAsProxyOut = actAsProxyOut && (proxyOutRules != null) && !proxyOutRules.isEmpty();
             }
+
+            if (logger.isInfoEnabled()) {
+                String msg = String.format("`ActAsProxy` feature is enabled with %d rules.", proxyOutRules.size());
+                logger.info(msg);
+            }
+
+            actAsProxyOut = actAsProxyOut && (proxyOutRules != null) && !proxyOutRules.isEmpty();
         }
 
         // Push notification server
@@ -415,7 +416,7 @@ public final class CallManager extends RestcommUntypedActor {
                 @Override
                 public UntypedActor create() throws Exception {
                     return new Call(sipFactory, msControllerFactory, configuration,
-                            null, null, null, actAsProxyOut, proxyOutRules, null);
+                            null, null, null, proxyOutRules, null);
                 }
             });
         } else {
@@ -425,7 +426,7 @@ public final class CallManager extends RestcommUntypedActor {
                 @Override
                 public UntypedActor create() throws Exception {
                     return new Call(sipFactory, msControllerFactory, configuration,
-                            request.statusCallback(), request.statusCallbackMethod(), request.statusCallbackEvent(), actAsProxyOut, proxyOutRules, request.getOutboundProxyHeaders());
+                            request.statusCallback(), request.statusCallbackMethod(), request.statusCallbackEvent(), proxyOutRules, request.getOutboundProxyHeaders());
                 }
             });
         }

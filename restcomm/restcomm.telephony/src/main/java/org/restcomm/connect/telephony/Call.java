@@ -284,17 +284,16 @@ public final class Call extends RestcommUntypedActor {
         }
     };
 
-    private final boolean actingAsProxy;
     private final List<ProxyRule> proxyRules;
 
     public Call(final SipFactory factory, final MediaServerControllerFactory mediaSessionControllerFactory, final Configuration configuration,
-                final URI statusCallback, final String statusCallbackMethod, final List<String> statusCallbackEvent, boolean actingAsProxy, List<ProxyRule> proxyRules) {
+                final URI statusCallback, final String statusCallbackMethod, final List<String> statusCallbackEvent, List<ProxyRule> proxyRules) {
         this(factory, mediaSessionControllerFactory, configuration, statusCallback, statusCallbackMethod,
-                statusCallbackEvent, actingAsProxy, proxyRules, null);
+                statusCallbackEvent, proxyRules, null);
     }
 
     public Call(final SipFactory factory, final MediaServerControllerFactory mediaSessionControllerFactory, final Configuration configuration,
-                final URI statusCallback, final String statusCallbackMethod, final List<String> statusCallbackEvent, boolean actingAsProxy, List<ProxyRule> proxyRules, Map<String,  ArrayList<String>> headers)
+                final URI statusCallback, final String statusCallbackMethod, final List<String> statusCallbackEvent, List<ProxyRule> proxyRules, Map<String,  ArrayList<String>> headers)
     {
         super();
         final ActorRef source = self();
@@ -430,7 +429,6 @@ public final class Call extends RestcommUntypedActor {
             final Configuration imsAuthentication = runtime.subset("ims-authentication");
             this.actAsImsUa = imsAuthentication.getBoolean("act-as-ims-ua");
         }
-        this.actingAsProxy = actingAsProxy;
         this.proxyRules = proxyRules;
     }
 
@@ -998,7 +996,7 @@ public final class Call extends RestcommUntypedActor {
             }
 
             ProxyRule matchedProxyRule = null;
-            if (actingAsProxy && (proxyRules != null && proxyRules.size()>0) ) {
+            if ( proxyRules != null && proxyRules.size()>0 ) {
                 matchedProxyRule = getSipMessageMatchProxyOutRules(invite);
             }
 
@@ -1517,7 +1515,7 @@ public final class Call extends RestcommUntypedActor {
 
 
         ProxyRule matchedProxyRule = null;
-        if (actingAsProxy && (proxyRules != null && proxyRules.size()>0) ) {
+        if ( proxyRules != null && proxyRules.size()>0 ) {
             matchedProxyRule = getSipMessageMatchProxyOutRules(sipMessage);
         }
 
@@ -2822,7 +2820,7 @@ public final class Call extends RestcommUntypedActor {
             final SipServletResponse okay = invite.createResponse(SipServletResponse.SC_OK);
 
             ProxyRule matchedProxyRule = null;
-            if (actingAsProxy && (proxyRules != null && proxyRules.size()>0) ) {
+            if ( proxyRules != null && proxyRules.size()>0 ) {
                 matchedProxyRule = getSipMessageMatchProxyOutRules(okay);
             }
 
